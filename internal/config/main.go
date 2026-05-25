@@ -40,12 +40,14 @@ func Read() Config {
 
 // Export a SetUser method on the Config struct that writes the config struct
 // to the JSON file after setting the current_user_name field.
-func (c Config) SetUser(userName string) {
+func (c Config) SetUser(userName string) error {
 	c.CurrentUserName = userName
 	err := write(c)
 	if err != nil {
-		log.Fatalf("Error when writing config: %v", err)
+		return fmt.Errorf("Error when writing config: %v", err)
 	}
+
+	return nil
 }
 
 func write(c Config) error {
