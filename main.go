@@ -17,9 +17,9 @@ func main() {
 		log.Fatalf("Error when reading: %v", err)
 	}
 
-	currentState := state{cfg: &cfg}
+	programState := state{cfg: &cfg}
 	availableCommands := commands{
-		cmd: make(map[string]func(*state, command) error),
+		registeredCommands: make(map[string]func(*state, command) error),
 	}
 
 	availableCommands.register("login", handlerLogin)
@@ -28,12 +28,11 @@ func main() {
 		log.Fatal("Usage: cli <command> [args...]")
 	}
 
-	currentCommand := command{
-		name: os.Args[1],
-		args: os.Args[2:],
-	}
+	err = availableCommands.run(&programState, command{
+		Name: os.Args[1],
+		Args: os.Args[2:],
+	})
 
-	err = availableCommands.run(&currentState, currentCommand)
 	if err != nil {
 		log.Fatal(err)
 	}
