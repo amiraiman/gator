@@ -38,6 +38,38 @@ func handlerListFeeds(s *state, cmd command) error {
 	return nil
 }
 
+func handlerFollowFeed(s *state, cmd command) error {
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("no user found, please login first. %v", s.cfg.CurrentUserName)
+	}
+
+	if len(cmd.Args) != 1 {
+		return fmt.Errorf("usage: %s <url>", cmd.Name)
+	}
+
+	feed, err := s.db.GetFeedByUrl(context.Background(), cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("feed is not created yet: %v", err)
+	}
+
+	follow, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("couldn't follow feed: %v", err)
+	}
+
+	fmt.Printf("New feed followed:\n")
+	fmt.Printf("Feed: %v\n", follow.UserName)
+	fmt.Printf("User: %v\n", follow.FeedName)
+	return nil
+}
+
 func handlerAddFeed(s *state, cmd command) error {
 	if len(cmd.Args) != 2 {
 		return fmt.Errorf("usage: %s <feed-name> <feed-url>", cmd.Name)
