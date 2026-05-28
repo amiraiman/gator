@@ -64,6 +64,11 @@ func handlerReset(s *state, cmd command) error {
 		return fmt.Errorf("Cant clear users table: %v", err)
 	}
 
+	err = s.db.DeleteFeeds(ctx)
+	if err != nil {
+		return fmt.Errorf("Cant clear feeds table: %v", err)
+	}
+
 	fmt.Println("Users table cleared successfully")
 	return nil
 }

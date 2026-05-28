@@ -9,7 +9,6 @@ func handlerRss(s *state, cmd command) error {
 	var feedUrl string
 	if len(cmd.Args) != 1 {
 		feedUrl = "https://www.wagslane.dev/index.xml"
-		// return fmt.Errorf("usage: %s <url>", cmd.Name)
 	} else {
 		feedUrl = cmd.Args[0]
 	}
