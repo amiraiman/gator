@@ -2,7 +2,7 @@
 SELECT * FROM users
 WHERE name = $1 LIMIT 1;
 
--- name: ListUsers :many
+-- name: GetUsers :many
 SELECT * FROM users
 ORDER BY name;
 
