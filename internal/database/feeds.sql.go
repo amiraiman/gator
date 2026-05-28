@@ -124,6 +124,15 @@ func (q *Queries) DeleteFeeds(ctx context.Context) error {
 	return err
 }
 
+const deleteFollowFeeds = `-- name: DeleteFollowFeeds :exec
+DELETE FROM feed_follows
+`
+
+func (q *Queries) DeleteFollowFeeds(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteFollowFeeds)
+	return err
+}
+
 const getFeedByName = `-- name: GetFeedByName :one
 SELECT id, created_at, updated_at, name, url, user_id FROM feeds
 WHERE name = $1 LIMIT 1
