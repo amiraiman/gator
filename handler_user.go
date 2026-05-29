@@ -59,19 +59,21 @@ func handlerLogin(s *state, cmd command) error {
 
 func handlerReset(s *state, cmd command) error {
 	ctx := context.Background()
-	err := s.db.DeleteUsers(ctx)
-	if err != nil {
+
+	if err := s.db.DeleteUsers(ctx); err != nil {
 		return fmt.Errorf("Cant clear users table: %v", err)
 	}
 
-	err = s.db.DeleteFeeds(ctx)
-	if err != nil {
-		return fmt.Errorf("Cant clear feeds table: %v", err)
+	if err := s.db.DeleteFollowFeeds(ctx); err != nil {
+		return fmt.Errorf("Cant clear follow feeds table: %v", err)
 	}
 
-	err = s.db.DeleteFollowFeeds(ctx)
-	if err != nil {
+	if err := s.db.DeletePost(ctx); err != nil {
 		return fmt.Errorf("Cant clear follow feeds table: %v", err)
+	}
+
+	if err := s.db.DeleteFeeds(ctx); err != nil {
+		return fmt.Errorf("Cant clear feeds table: %v", err)
 	}
 
 	fmt.Println("Users table cleared successfully")

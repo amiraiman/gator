@@ -14,3 +14,6 @@ WHERE posts.feed_id IN (
 )
 ORDER BY posts.published_at DESC
 LIMIT $2;
+
+-- name: DeletePost :exec
+DELETE FROM POSTS;
