@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,6 +31,43 @@ func handlerRss(s *state, cmd command) error {
 			return err
 		}
 	}
+}
+
+func handlerBrowse(s *state, cmd command, user database.User) error {
+	limit := 2
+	if len(cmd.Args) == 1 {
+		parsedLimit, err := strconv.Atoi(cmd.Args[0])
+		if err == nil {
+			limit = parsedLimit
+		}
+	}
+
+	posts, err := s.db.GetPostsForUser(context.Background(), database.GetPostsForUserParams{
+		UserID: user.ID,
+		Limit:  int32(limit),
+	})
+	if err != nil {
+		return fmt.Errorf("couldn't fetch feeds for user \"%v\": %v", user.Name, err)
+	}
+
+	if len(posts) == 0 {
+		fmt.Println("No posts found for you")
+		return nil
+	}
+
+	fmt.Printf("Found %v posts for %v\n\n", min(len(posts), limit), user.Name)
+	for i, post := range posts {
+		if i == limit {
+			break
+		}
+
+		fmt.Printf("%s from %s\n", post.PublishedAt.Format("Mon Jan 2"), post.FeedName.String)
+		fmt.Printf("--- %s ---\n", post.Title)
+		fmt.Printf("    %v\n", post.Description)
+		fmt.Printf("Link: %s\n", post.Url)
+		fmt.Println("=====================================")
+	}
+	return nil
 }
 
 func scrapeFeeds(s *state, cmd command) error {
