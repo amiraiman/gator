@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/amiraiman/gator/internal/database"
+	"github.com/google/uuid"
 )
 
 func handlerRss(s *state, cmd command) error {
@@ -51,6 +53,34 @@ func scrapeFeeds(s *state, cmd command) error {
 		return fmt.Errorf("couldn't scrape feed: %v", err)
 	}
 
-	fetchedFeed.printFeed()
+	for _, post := range fetchedFeed.Channel.Items {
+		publishedDate, err := time.Parse(time.RFC1123, post.PublishedDate)
+		if err != nil {
+			fmt.Printf("couldn't parse published date for \"%v\": %v\n", post.Title, post.PublishedDate)
+			continue
+		}
+
+		savedPost, err := s.db.CreatePost(context.Background(), database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   time.Now().UTC(),
+			UpdatedAt:   time.Now().UTC(),
+			Title:       post.Title,
+			Url:         post.Link,
+			Description: post.Description,
+			PublishedAt: publishedDate,
+			FeedID:      feed.ID,
+		})
+
+		if err != nil {
+			if !strings.Contains(err.Error(), "pq: duplicate key value violates unique constraint") {
+				fmt.Printf("couldn't save post %v to database: %v\n", post.Title, err)
+			} else {
+				fmt.Printf("post %v already exists in the database\n", post.Title)
+			}
+		} else {
+			fmt.Printf("post %v saved to database\n", savedPost.Title)
+		}
+	}
+
 	return nil
 }
